@@ -5,7 +5,7 @@ void setup()
 }
 void loop()
   digitalWrite(led, HIGH); //sets led on HIGH
-  delay(500);    //waits 1 sec
+  delay(500);    //waits 0.5 seconds
   digitalWrite(led, LOW);    //sets led to LOW
-  delay(500);   //waits 1 sec
+  delay(500);   //waits 0.5 seconds
 }
