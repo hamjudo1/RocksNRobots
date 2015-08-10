@@ -2,7 +2,7 @@
  
 #include "DigiKeyboard.h" 
  
-int front_sensor_val = 0; 
+int front_sensor_val = 0; //Changed by Edward
 
 
 // the setup routine runs once when you press reset:
