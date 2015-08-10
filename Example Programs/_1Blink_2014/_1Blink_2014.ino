@@ -1,3 +1,4 @@
+//one color
 int led = 3;     //Declares Var led to pin 3
 void setup()
 {
