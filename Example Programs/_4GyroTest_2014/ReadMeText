@@ -1,0 +1,2 @@
+The gyro test is to make sure that when the circuit board moves, the sensors are picking it up correctly.
+If you move the circuit board from left to right, the numbers should change.
