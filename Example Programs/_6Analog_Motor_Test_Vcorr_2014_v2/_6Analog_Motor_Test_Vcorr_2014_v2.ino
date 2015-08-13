@@ -53,10 +53,10 @@ void loop()  {
     delay(10);
   }
   
-  for(int counter = normmotor1speed; counter <= 180; counter = counter -1)
+  for(int counter = 0; counter <= 100; counter = counter++)
   {
-    analogWrite(motor1, counter);  // gradually slows motors, keeping heli from plummeting,
-    analogWrite(motor2, counter);  // which you just hate to see it do every time
+    analogWrite(motor1, normmotor1speed-counter);  // gradually slows motors, keeping heli from plummeting,
+    analogWrite(motor2, normmotor2speed-counter);  // which you just hate to see it do every time
     delay(20);
   }  
   
