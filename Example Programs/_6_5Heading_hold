@@ -19,14 +19,22 @@ const int motor2 = 1;      // motor1 connected to analog pin 8
 
 int GYRO_SENSOR_PIN = 0;  // Input signal for gyro value
 
-int motor1basespeed = 210; // these numbers will need to be tweaked for your
-int motor2basespeed = 170; // specific heli - the default value is 135 for both.
+int motor1basespeed = 195; // these numbers will need to be tweaked for your
+int motor2basespeed = 155; // specific heli - the default value is 135 for both.
+
+int FRONT_SENSOR_PIN = 2;
+int ALTIMETER_PIN = 1;
 
 int gyro_sensor_val = 0; //Declare variable: measured gyro value in code.  Initialized at 0
 int base_gyro_val = 0;  //Value reported by the gyro when motors are on but heli is not turning
 
 int normmotor1speed;
 int normmotor2speed;
+
+int yaw_rate;
+int motor1yaw;
+int motor2yaw;
+
 long VCCmV = 3500;
 
 
