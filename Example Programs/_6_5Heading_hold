@@ -1,0 +1,135 @@
+/* You might already have an idea of what a variable 
+is in math. In programming, a variable is a word with 
+just use the number 0, instead.
+*/
+
+
+/* Not working right. DigiKeyboard does not work at the same time as the red LED on the board.
+*/
+ //#include "DigiKeyboard.h"
+ 
+ /*take note that motor1 is the bottom rotor, and motor2 is the upper rotor.
+   having the upper rotor (motor2) moving faster than the other will cause the heli
+   to spin counterclockwise. Likewise, having the bottom rotor, operated by motor1
+   moving faster, will make the heli spin clockwise.*/
+ 
+const int led = 3;
+const int motor1 = 0;      // motor1 connected to analog pin 7
+const int motor2 = 1;      // motor1 connected to analog pin 8
+
+int GYRO_SENSOR_PIN = 0;  // Input signal for gyro value
+
+int motor1basespeed = 210; // these numbers will need to be tweaked for your
+int motor2basespeed = 170; // specific heli - the default value is 135 for both.
+
+int gyro_sensor_val = 0; //Declare variable: measured gyro value in code.  Initialized at 0
+int base_gyro_val = 0;  //Value reported by the gyro when motors are on but heli is not turning
+
+int normmotor1speed;
+int normmotor2speed;
+long VCCmV = 3500;
+
+
+
+void setup()  { 
+  // initialize the digital pin as an output.
+  pinMode(led, OUTPUT);    // sets the pin as output
+  pinMode(motor1, OUTPUT);   // sets the pin as output
+  pinMode(motor2, OUTPUT);   // sets the pin as output
+  pinMode(ALTIMETER_PIN, INPUT); //sets the pin as input for downward sensor
+  pinMode(FRONT_SENSOR_PIN, INPUT); //sets the pin as input for front sensor
+  pinMode(GYRO_SENSOR_PIN, INPUT); //sets the pin as input for onboard gyro sensor
+} 
+
+void loop()  { 
+  digitalWrite(led, LOW);   //This provides a slow start so the battery voltage does not drop too much
+  delay(500); 
+  analogWrite(motor1, 50); 
+  analogWrite(motor2, 50); 
+  delay(100); 
+  analogWrite(motor1, 100); 
+  analogWrite(motor2, 100); 
+  delay(100); 
+  digitalWrite(led, HIGH);
+  analogWrite(motor1, 150); 
+  analogWrite(motor2, 150); 
+  delay(100); 
+  analogWrite(motor1, 200); 
+  analogWrite(motor2, 200); 
+  delay(100); 
+  analogWrite(motor1, 255); 
+  analogWrite(motor2, 255); 
+  delay(300); 
+  int base_gyro_val = analogRead(GYRO_SENSOR_PIN);
+  delay(100);
+  analogWrite(motor1, 0); 
+  analogWrite(motor2, 0);
+  digitalWrite(led, LOW);
+  delay(500);
+  for(int counter = 0; counter < 300; counter++)  // This determines the flight time
+  {
+    VCCmV = ((VCCmV*95)/100);                     // old value , 95%
+    VCCmV = (VCCmV + (readVcc()/100)*5);          // new value 5%
+    
+    int gyro_sensor_val = analogRead(GYRO_SENSOR_PIN);  //
+    
+    yaw_rate = (base_gyro_val - gyro_sensor_val);
+    
+    motor1yaw = (motor1basespeed + yaw_rate);
+    motor2yaw = (motor2basespeed - yaw_rate);
+    
+    normmotor1speed =int(((long(motor1yaw))*long(1330))/(VCCmV-2025));    //
+    normmotor2speed =int(((long(motor2yaw))*long(1330))/(VCCmV-2025));     
+    
+    analogWrite(motor1, normmotor1speed);  //
+    analogWrite(motor2, normmotor2speed);   
+    
+    digitalWrite(led, HIGH);
+
+    delay(10);
+  }
+  
+  for(int counter = normmotor1speed; counter <= 180; counter = counter -1)
+  {
+    analogWrite(motor1, counter);  // gradually slows motors, keeping heli from plummeting,
+    analogWrite(motor2, counter);  // which you just hate to see it do every time
+    delay(20);
+  }  
+  
+  analogWrite(motor1, 0); 
+  analogWrite(motor2, 0);
+  digitalWrite(led, LOW);
+  delay(10000);  
+}
+long readVcc() {
+  // Source: http://provideyourown.com/2012/secret-arduino-voltmeter-measure-battery-voltage/
+  // Read 1.1V reference against AVcc
+  // set the reference to Vcc and the measurement to the internal 1.1V reference
+  #if defined(__AVR_ATmega32U4__) || defined(__AVR_ATmega1280__) || defined(__AVR_ATmega2560__)
+    //DigiKeyboard.println(1);
+    ADMUX = _BV(REFS0) | _BV(MUX4) | _BV(MUX3) | _BV(MUX2) | _BV(MUX1);
+  #elif defined (__AVR_ATtiny24__) || defined(__AVR_ATtiny44__) || defined(__AVR_ATtiny84__)
+     //DigiKeyboard.println(2);
+     ADMUX = _BV(MUX5) | _BV(MUX0) ;
+  #elif defined (__AVR_ATtiny25__) || defined(__AVR_ATtiny45__) || defined(__AVR_ATtiny85__)
+     //DigiKeyboard.println(3);
+     ADMUX = _BV(MUX3) | _BV(MUX2);   
+  #else
+    //DigiKeyboard.println(4);
+    ADMUX = _BV(REFS0) | _BV(MUX3) | _BV(MUX2) | _BV(MUX1);
+  #endif  
+ 
+  delay(2); // Wait for Vref to settle
+  ADCSRA |= _BV(ADSC); // Start conversion
+  while (bit_is_set(ADCSRA,ADSC)); // measuring
+ 
+  uint8_t low  = ADCL; // must read ADCL first - it then locks ADCH  
+  uint8_t high = ADCH; // unlocks both
+  
+  long result = (high<<8) | low;
+ //DigiKeyboard.println(result);8
+
+  //result = 1125300L / result; // Calculate Vcc (in mV); 1125300 = 1.1*1023*1000
+  result = 1211861L / result; 
+  return result; // Vcc in millivolts
+}
