@@ -7,8 +7,8 @@
 // ******* should the declarations be in void setup or above?
 
 #include "rnr.h"
-const int motor1basespeed = 250;
-const int motor2basespeed = 210;
+const int motor1basespeed = 260;
+const int motor2basespeed = 220;
 const int led = 3;
 const int motor1 = 0;      // motor1 connected to analog pin 7?
 const int motor2 = 1;      // motor1 connected to analog pin 8?
@@ -31,7 +31,7 @@ long VCCmV = 3500; // current averaged battery voltage in millivolts.
 int rudder = 0;  //Declare variable:
 
 int yaw_rate = 0;
-int AltGoal = 100; //#Set by user: roughly in cm to determine free flight height off ground
+int AltGoal = 120; //#Set by user: roughly in cm to determine free flight height off ground
 int AltErr; //Declared: Difference between current altimeter_val and AltGoal
 int scan = 0;  //Declared: Used for RH_LH Scan of Front Sensor
 int scanDir = 1; //Declared: Used for RH_LH Scan of Front Sensor
@@ -40,9 +40,9 @@ int scan2Dir = 1; //Declared: Used for RH_LH Scan of Front Sensor
 int counter = 0; //Declared: Used for looping exercises within the code
 
 void setup()  {
-  pinMode(ALTIMETER_PIN, INPUT); //sets the pin as input for downward sensor
-  pinMode(FRONT_SENSOR_PIN, INPUT); //sets the pin as input for front sensor
-  pinMode(GYRO_SENSOR_PIN, INPUT); //sets the pin as input for onboard gyro sensor
+  //pinMode(ALTIMETER_PIN, INPUT); //sets the pin as input for downward sensor
+  //pinMode(FRONT_SENSOR_PIN, INPUT); //sets the pin as input for front sensor
+  //pinMode(GYRO_SENSOR_PIN, INPUT); //sets the pin as input for onboard gyro sensor
   // initialize the digital pin as an output.
   pinMode(led, OUTPUT);    // sets the pin as output as RED led out
   pinMode(motor1, OUTPUT);   // sets the pin as output
@@ -68,9 +68,9 @@ void setMotors(int hSpeed, int yawRate) {
   if ( maxNormSpeed > 254 ) {
     normSpeed1 = (normSpeed1 * 254) / maxNormSpeed;
     normSpeed2 = (normSpeed2 * 254) / maxNormSpeed;
-    digitalWrite(led, LOW);
+   // digitalWrite(led, LOW);
   } else {
-    digitalWrite(led, HIGH);
+   // digitalWrite(led, HIGH);
   }
   // Motor speeds can only go down to 0. Low speeds only happen before liftoff, or after landing, so
   // we won't bother to be proportional. Just make sure it never goes negative.
@@ -92,12 +92,12 @@ void rampMotors(int startSpeed, int endSpeed, int stepSize) {
     setMotors(hSpeed, 0);
     delay(stepSize);
   }
-
 }
 void loop()  {
   /* Obtaining initial gyro input value under full electrical load conditions. Soley for purposes of getting
   initial gyro value.  USE SPIN TEST ON STUDENTS TO DEMONSTRATE THE GYRO*/
 
+  delay(1000); // 1 second to unplug the battery after programming.
   digitalWrite(led, LOW);
   rampMotors(0, basespeed, 50);
   int base_gyro_val = analogRead(GYRO_SENSOR_PIN);
@@ -111,7 +111,7 @@ void loop()  {
     VCCmV = (VCCmV + (readVcc() / 100) * 5);
 
     int altimeter_val = 23000 / (55 + analogRead(ALTIMETER_PIN));
-    int front_sensor_val = 7800 / (1 + analogRead(FRONT_SENSOR_PIN));
+    int front_sensor_val = 23000 / (55 + analogRead(FRONT_SENSOR_PIN));
     int gyro_sensor_val = analogRead(GYRO_SENSOR_PIN);
 
     AltErr = (AltGoal - altimeter_val) * 3;
@@ -139,14 +139,19 @@ void loop()  {
     }
     // Let's make this a nice -100 to +100 value.
     int cycle2Norm = (cycle2Pos - 200) / 2;
-    if (front_sensor_val < 80)
+    if (front_sensor_val < 100)
     {
+      digitalWrite(led, HIGH);
+      scanDir = 1;
       // digitalWrite(5, HIGH);
-      gyro_target = base_gyro_val + scanDir * (80 - front_sensor_val) / 5;
+      //gyro_target = base_gyro_val + scanDir * ((50- front_sensor_val) / 5);
+      gyro_target = base_gyro_val - 100;
     }
     else
     {
-      gyro_target = base_gyro_val + cycle2Norm / 20;
+      digitalWrite(led, LOW);
+      cycle2Norm = 0;
+      gyro_target = base_gyro_val + (cycle2Norm / 50);
     }
 
     // This next bit of code limits the slew rate, or rate of change.
@@ -156,8 +161,16 @@ void loop()  {
       real_gyro_target = real_gyro_target - 1;
     }
     //yaw_rate = (((base_gyro_val+rudder+scan/2) - gyro_sensor_val));
-    yaw_rate = (gyro_sensor_val - real_gyro_target);
-    setMotors(helispeed, yaw_rate / 30);
+    //yaw_rate = (gyro_sensor_val - real_gyro_target);
+//    yaw_rate = ( real_gyro_target - gyro_sensor_val );
+    yaw_rate = ( gyro_target - gyro_sensor_val );
+    if ( yaw_rate > 30 ) {
+      yaw_rate = 30;
+    } else if ( yaw_rate < -30 ) {
+      yaw_rate = -30;
+    }
+    setMotors(helispeed, yaw_rate );
+    // setMotors(helispeed, 0);
 
     counter = counter + 1;
     if (counter > 3000) {
