@@ -43,6 +43,9 @@ void setup()  {
   VCCmV = readVcc();
 }
 
+// setMotors() is given a desired speed and desired rate of yaw (spin).
+// It applies the trim settings for this helicopter, corrects for voltage,
+// and limits the motor speed values to 0 to 255. 
 void setMotors(int hSpeed, int yawRate) {
   int mSpeed1 = hSpeed + trim + yawRate;
   int mSpeed2 = hSpeed - trim - yawRate;
@@ -99,6 +102,8 @@ void loop()  {
   delay(100);
 
   while (1) {
+    // Maintain a running average. Use 95% of the old reading and
+    // 5% of the new reading.
     VCCmV = ((VCCmV * 95) / 100);
     VCCmV = (VCCmV + (readVcc() / 100) * 5);
 
@@ -117,7 +122,8 @@ void loop()  {
     } else if ( scan2 > 1000 ) {
       scan2Dir = -1;
     }
-
+// See how far off we are from our altitude goal.
+// Multiply by a scaling factor, so altitude changes happen at a good speed.
     AltErr = (AltGoal - altimeter_val) * 3;
 
     if (AltErr > 30) {
@@ -129,21 +135,23 @@ void loop()  {
 
     helispeed = basespeed + AltErr;
 
+    // Note that the helicopter sees in infrared, we see with visible
+    // light. During one test, there were a group of people in bluejeans
+    // and one person dressed fancier. The helicopter was blind to the
+    // fancy pants, and kept running into them. The robot is also blind
+    // to mirrors. 
     if (front_sensor_val < 100)
     {
-      digitalWrite(led, HIGH);
-      //gyro_target = base_gyro_val - 100;
+      digitalWrite(led, HIGH); // Light on, helicopter sees something.
       rudder = rudder - 1;
     }
     else
     {
-      digitalWrite(led, LOW);
-      // gyro_target = base_gyro_val;
+      digitalWrite(led, LOW); // Light off, helicopter see nothing.
       if ( rudder <= 0 ) {
         rudder = rudder + 2;
       }
     }
-   // yaw_rate = ( gyro_target - gyro_sensor_val );
     yaw_rate = base_gyro_val + rudder+(scan1/2) + (scan2/20) - gyro_sensor_val;
     if ( yaw_rate > 30 ) {
       yaw_rate = 30;
