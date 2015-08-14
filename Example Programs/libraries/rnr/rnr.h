@@ -1,0 +1,2 @@
+long readVcc();
+void rnrDone();
