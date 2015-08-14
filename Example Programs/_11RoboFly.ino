@@ -4,8 +4,8 @@
  */
 
 #include "rnr.h"
-const int motor1basespeed = 260;
-const int motor2basespeed = 220;
+const int motor1basespeed = 220;
+const int motor2basespeed = 180;
 const int led = 3;  // LED is on digital pin 3
 const int motor1 = 0; // First motor on digital pin 0
 const int motor2 = 1;    // Second motor on digital pin 1
@@ -30,7 +30,7 @@ int trim = (motor1basespeed - motor2basespeed) / 2;
 long VCCmV = 3500; // current averaged battery voltage in millivolts.
 
 int yaw_rate = 0;
-int AltGoal = 120; //#Set by user: roughly in cm to determine free flight height off ground
+int AltGoal = 80; //#Set by user: roughly in cm to determine free flight height off ground
 int AltErr; //Declared: Difference between current altimeter_val and AltGoal
 int counter = 0; //Declared: Used for looping exercises within the code
 
